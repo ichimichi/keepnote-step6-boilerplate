@@ -1,8 +1,15 @@
 package com.stackroute.keepnote.service;
 
+import java.util.Date;
+import java.util.NoSuchElementException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.stackroute.keepnote.exceptions.UserAlreadyExistsException;
 import com.stackroute.keepnote.exceptions.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
+import com.stackroute.keepnote.repository.UserRepository;
 
 /*
 * Service classes are used here to implement additional business logic/validation 
@@ -13,7 +20,7 @@ import com.stackroute.keepnote.model.User;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
-
+@Service
 public class UserServiceImpl implements UserService {
 
 	/*
@@ -21,6 +28,8 @@ public class UserServiceImpl implements UserService {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
+	@Autowired
+	UserRepository userRepository;
 
 	/*
 	 * This method should be used to save a new user.Call the corresponding method
@@ -28,38 +37,69 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User registerUser(User user) throws UserAlreadyExistsException {
-
-		return null;
+		User savedUser = null;
+		if (userRepository.existsById(user.getUserId())) {
+			throw new UserAlreadyExistsException("UserAlreadyExistsException");
+		} else {
+			user.setUserAddedDate(new Date());
+			savedUser = userRepository.insert(user);
+			if (savedUser == null) {
+				throw new UserAlreadyExistsException("UserAlreadyExistsException");
+			}
+		}
+		return savedUser;
 	}
 
 	/*
 	 * This method should be used to update a existing user.Call the corresponding
 	 * method of Respository interface.
 	 */
+	public User updateUser(String userId, User user) throws UserNotFoundException {
 
-	public User updateUser(String userId,User user) throws UserNotFoundException {
+		try {
+			User fecthedUser = userRepository.findById(userId).get();
+			fecthedUser.setUserName(user.getUserName());
+			fecthedUser.setUserMobile(user.getUserMobile());
+			fecthedUser.setUserPassword(user.getUserPassword());
+			fecthedUser.setUserId(user.getUserId());
 
-		return null;
+			userRepository.save(fecthedUser);
+			return fecthedUser;
+
+		} catch (NoSuchElementException exception) {
+			throw new UserNotFoundException("UserNotFoundException");
+		}
+
 	}
 
 	/*
 	 * This method should be used to delete an existing user. Call the corresponding
 	 * method of Respository interface.
 	 */
-
 	public boolean deleteUser(String userId) throws UserNotFoundException {
-
-		return false;
+		boolean status = false;
+		try {
+			User fecthedUser = userRepository.findById(userId).get();
+			if (fecthedUser != null) {
+				userRepository.delete(fecthedUser);
+				status = true;
+			}
+		} catch (NoSuchElementException exception) {
+			throw new UserNotFoundException("UserNotFoundException");
+		}
+		return status;
 	}
 
 	/*
 	 * This method should be used to get a user by userId.Call the corresponding
 	 * method of Respository interface.
 	 */
-
 	public User getUserById(String userId) throws UserNotFoundException {
-
-		return null;
+		User fecthedUser = userRepository.findById(userId).get();
+		if (fecthedUser == null) {
+			throw new UserNotFoundException("UserNotFoundException");
+		}
+		return fecthedUser;
 	}
 
 }
