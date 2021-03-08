@@ -92,7 +92,7 @@ public class UserAuthenticationController {
 // Generate JWT token
 	public String getToken(String userId, String password) throws Exception {
 		return Jwts.builder().setId(userId).setSubject(password).setIssuedAt(new Date())
-				.signWith(SignatureAlgorithm.HS256, "secretkey").compact();
+				.signWith(SignatureAlgorithm.HS256, "ibmwave8").compact();
 
 	}
 
